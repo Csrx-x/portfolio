@@ -63,18 +63,24 @@ export default function Portfolio() {
       />
 
       {/* Navigation */}
-      <nav className="fixed top-0 w-full z-50 p-6">
-        <div className="max-w-6xl mx-auto flex justify-between items-center bg-[#1A1D23]/60 backdrop-blur-xl border border-white/5 px-6 py-4 rounded-2xl">
-          <span className="text-xl font-extrabold tracking-tighter uppercase">
-            LEON<span className="text-[#8B5CF6]">.</span>
-          </span>
-          <div className="hidden md:flex space-x-8 text-sm font-medium">
-            <a href="#work" className="hover:text-[#8B5CF6] transition-colors">Work</a>
-            <a href="#about" className="hover:text-[#8B5CF6] transition-colors">About</a>
-            <a href="#contact" className="px-5 py-2 bg-[#8B5CF6] rounded-xl hover:bg-[#7c4dff] transition-all">Let's Talk</a>
-          </div>
-        </div>
-      </nav>
+<nav className="fixed top-0 w-full z-50 p-6">
+  <div className="max-w-6xl mx-auto flex justify-between items-center bg-[#1A1D23]/60 backdrop-blur-xl border border-white/5 px-6 py-4 rounded-2xl">
+    
+    {/* Logo Links */}
+    <a href="#" className="text-xl font-extrabold tracking-tighter uppercase flex items-center">
+      LEON<span className="text-[#8B5CF6]">.</span>
+    </a>
+
+    {/* Items Rechts - Mittig zum Logo ausgerichtet */}
+    <div className="hidden md:flex items-center space-x-8 text-sm font-medium">
+      <a href="#work" className="hover:text-[#8B5CF6] transition-colors py-2">Work</a>
+      <a href="#about" className="hover:text-[#8B5CF6] transition-colors py-2">About</a>
+      <a href="#contact" className="ml-4 px-5 py-2.5 bg-[#8B5CF6] text-white rounded-xl hover:bg-[#7c4dff] transition-all flex items-center justify-center">
+        Let's Talk
+      </a>
+    </div>
+  </div>
+</nav>
 
       {/* Hero Section */}
       <section className="relative min-h-screen flex items-center justify-center px-6 pt-20">
