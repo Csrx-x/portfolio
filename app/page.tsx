@@ -1,10 +1,19 @@
 "use client";
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/dist/ScrollTrigger';
+import { useGSAP } from '@gsap/react';
+
+// GSAP Plugins registrieren
+if (typeof window !== "undefined") {
+  gsap.registerPlugin(ScrollTrigger);
+}
 
 export default function Portfolio() {
+  const container = useRef(null);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
-  // Mouse Move Effekt für den Glow
+  // 1. Mouse Move Effekt für den subtilen Glow
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       setMousePos({ x: e.clientX, y: e.clientY });
@@ -13,12 +22,41 @@ export default function Portfolio() {
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
+  // 2. GSAP Animationen (Entrance & Scroll)
+  useGSAP(() => {
+    const tl = gsap.timeline();
+
+    // Initiales Erscheinen (Hero Section)
+    tl.from(".hero-content > *", {
+      y: 50,
+      opacity: 0,
+      duration: 1.2,
+      stagger: 0.2,
+      ease: "power4.out",
+    });
+
+    // Scroll-Animation für die Bento-Karten
+    gsap.utils.toArray<HTMLElement>(".bento-card").forEach((card) => {
+      gsap.from(card, {
+        scrollTrigger: {
+          trigger: card,
+          start: "top 85%", // Animation startet, wenn die Karte 85% im Viewport ist
+          toggleActions: "play none none reverse",
+        },
+        y: 60,
+        opacity: 0,
+        duration: 1,
+        ease: "power3.out",
+      });
+    });
+  }, { scope: container });
+
   return (
-    <div className="min-h-screen bg-[#0F1115] text-[#F8FAFC] font-sans selection:bg-purple-500/30">
+    <div ref={container} className="min-h-screen bg-[#0F1115] text-[#F8FAFC] font-sans selection:bg-purple-500/30 overflow-x-hidden">
       
-      {/* Dynamic Glow Background */}
+      {/* Dynamic Glow Background (Folgt der Maus) */}
       <div 
-        className="pointer-events-none fixed inset-0 z-30 transition-opacity duration-300"
+        className="pointer-events-none fixed inset-0 z-30 transition-opacity duration-300 opacity-50"
         style={{
           background: `radial-gradient(600px at ${mousePos.x}px ${mousePos.y}px, rgba(139, 92, 246, 0.15), transparent 80%)`
         }}
@@ -27,7 +65,7 @@ export default function Portfolio() {
       {/* Navigation */}
       <nav className="fixed top-0 w-full z-50 p-6">
         <div className="max-w-6xl mx-auto flex justify-between items-center bg-[#1A1D23]/60 backdrop-blur-xl border border-white/5 px-6 py-4 rounded-2xl">
-          <span className="text-xl font-extrabold tracking-tighter uppercase font-display">
+          <span className="text-xl font-extrabold tracking-tighter uppercase">
             LEON<span className="text-[#8B5CF6]">.</span>
           </span>
           <div className="hidden md:flex space-x-8 text-sm font-medium">
@@ -40,7 +78,7 @@ export default function Portfolio() {
 
       {/* Hero Section */}
       <section className="relative min-h-screen flex items-center justify-center px-6 pt-20">
-        <div className="max-w-4xl text-center">
+        <div className="max-w-4xl text-center hero-content">
           <h1 className="text-5xl md:text-8xl font-black mb-6 leading-[1.1] tracking-tight">
             Digitale Erlebnisse <br /> 
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#8B5CF6] to-[#22D3EE]">
@@ -67,7 +105,7 @@ export default function Portfolio() {
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Main Project Card */}
-          <div className="md:col-span-2 group relative overflow-hidden rounded-3xl bg-[#1A1D23] border border-white/5 h-[450px]">
+          <div className="bento-card md:col-span-2 group relative overflow-hidden rounded-3xl bg-[#1A1D23] border border-white/5 h-[450px]">
             <div className="absolute inset-0 bg-gradient-to-t from-[#0F1115] via-transparent to-transparent opacity-80 z-10" />
             <div className="absolute bottom-8 left-8 z-20">
               <span className="text-xs font-bold uppercase tracking-[0.2em] text-[#22D3EE] mb-2 block">Fullstack App</span>
@@ -77,7 +115,7 @@ export default function Portfolio() {
           </div>
 
           {/* Secondary Card */}
-          <div className="group relative overflow-hidden rounded-3xl bg-[#1A1D23] border border-white/5 h-[450px]">
+          <div className="bento-card group relative overflow-hidden rounded-3xl bg-[#1A1D23] border border-white/5 h-[450px]">
             <div className="absolute inset-0 bg-gradient-to-t from-[#0F1115] via-transparent to-transparent opacity-80 z-10" />
             <div className="absolute bottom-8 left-8 z-20">
               <span className="text-xs font-bold uppercase tracking-[0.2em] text-[#8B5CF6] mb-2 block">UI/UX Design</span>
@@ -86,15 +124,15 @@ export default function Portfolio() {
             <div className="w-full h-full bg-slate-700/50 group-hover:scale-105 transition-transform duration-700" />
           </div>
 
-          {/* Info Card */}
-          <div className="md:col-span-1 bg-gradient-to-br from-[#8B5CF6]/20 to-transparent rounded-3xl p-10 border border-[#8B5CF6]/20 flex flex-col justify-center">
+          {/* Info Card (GSAP Animated too) */}
+          <div className="bento-card md:col-span-1 bg-gradient-to-br from-[#8B5CF6]/20 to-transparent rounded-3xl p-10 border border-[#8B5CF6]/20 flex flex-col justify-center">
             <p className="text-xl leading-relaxed italic text-gray-300">
               "Gutes Design ist nicht nur, wie es aussieht, sondern wie es funktioniert."
             </p>
           </div>
 
           {/* Third Project */}
-          <div className="md:col-span-2 group relative overflow-hidden rounded-3xl bg-[#1A1D23] border border-white/5 h-[300px]">
+          <div className="bento-card md:col-span-2 group relative overflow-hidden rounded-3xl bg-[#1A1D23] border border-white/5 h-[300px]">
             <div className="absolute inset-0 bg-gradient-to-r from-[#0F1115] to-transparent opacity-90 z-10" />
             <div className="absolute inset-0 flex items-center left-8 z-20">
               <div>
@@ -111,16 +149,11 @@ export default function Portfolio() {
       <footer id="contact" className="max-w-6xl mx-auto px-6 py-32 border-t border-white/5 text-center">
         <h2 className="text-3xl md:text-5xl font-bold mb-8">Bereit für das nächste Level?</h2>
         <a 
-          href="mailto:deine-email@beispiel.de" 
-          className="text-2xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-500 hover:from-[#8B5CF6] hover:to-[#22D3EE] transition-all duration-500 underline decoration-[#8B5CF6] underline-offset-[12px]"
+          href="mailto:hallo@leonjakob.de" 
+          className="text-2xl md:text-6xl font-black text-[#F8FAFC] hover:text-[#8B5CF6] transition-all duration-500 underline decoration-[#8B5CF6] underline-offset-[12px]"
         >
           hallo@leonjakob.de
         </a>
-        <div className="mt-20 flex justify-center space-x-6 text-gray-500 text-sm">
-          <span>GitHub</span>
-          <span>LinkedIn</span>
-          <span>Instagram</span>
-        </div>
       </footer>
     </div>
   );
