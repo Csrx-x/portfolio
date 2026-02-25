@@ -9,8 +9,40 @@ if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
 }
 
+// Helper-Funktion, um Textzeilen aufzuteilen
+// (Füge diese Funktion hier ein, wie oben gezeigt)
+function splitTextIntoLines(element: HTMLElement) {
+  const text = element.innerText;
+  const words = text.split(" ");
+  let currentLine = "";
+  const lines: string[] = [];
+
+  element.innerText = ''; // Ursprünglichen Text leeren
+
+  words.forEach(word => {
+    const testSpan = document.createElement('span');
+    testSpan.style.whiteSpace = 'nowrap'; // Wichtig für korrekte Breitenmessung
+    testSpan.style.visibility = 'hidden'; // Unsichtbar machen
+    testSpan.innerText = currentLine + (currentLine ? ' ' : '') + word;
+    element.appendChild(testSpan);
+
+    if (testSpan.offsetWidth > element.offsetWidth && currentLine !== '') {
+      lines.push(currentLine);
+      currentLine = word;
+    } else {
+      currentLine += (currentLine ? ' ' : '') + word;
+    }
+    element.removeChild(testSpan); // Test-Span entfernen
+  });
+  lines.push(currentLine); // Letzte Zeile hinzufügen
+
+  return lines.map(line => `<span class="block overflow-hidden"><span class="animated-line">${line}</span></span>`).join('');
+}
+
+
 export default function Portfolio() {
   const container = useRef(null);
+  const heroHeadlineRef = useRef<HTMLHeadingElement>(null); // Ref für die Headline
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
   // 1. Mouse Move Effekt für den subtilen Glow
@@ -26,14 +58,43 @@ export default function Portfolio() {
   useGSAP(() => {
     const tl = gsap.timeline();
 
-    // Initiales Erscheinen (Hero Section)
-    tl.from(".hero-content > *", {
-      y: 50,
-      opacity: 0,
-      duration: 1.2,
-      stagger: 0.2,
-      ease: "power4.out",
-    });
+    // Text in Zeilen aufteilen und HTML aktualisieren
+    if (heroHeadlineRef.current) {
+      const originalHTML = heroHeadlineRef.current.innerHTML; // Den originalen Inhalt speichern
+      heroHeadlineRef.current.innerHTML = splitTextIntoLines(heroHeadlineRef.current);
+
+      // Animation für die einzelnen Zeilen der Headline
+      tl.from(".animated-line", {
+        yPercent: 100, // Von 100% unten nach oben
+        opacity: 0,
+        duration: 1.2,
+        ease: "power4.out",
+        stagger: 0.15, // Jede Zeile etwas verzögert
+        delay: 0.3 // Etwas Verzögerung, bis die Animation startet
+      })
+      .from(".hero-subtitle", {
+        opacity: 0,
+        y: 20,
+        duration: 0.8
+      }, "-=0.6") // Startet 0.6s VOR dem Ende der Headline-Animation
+      .from(".hero-buttons > *", {
+        opacity: 0,
+        y: 20,
+        duration: 0.8,
+        stagger: 0.1
+      }, "-=0.4"); // Startet 0.4s VOR dem Ende der Subtitle-Animation
+      
+      // Am Ende der Animation den HTML-Inhalt wiederherstellen, falls nötig,
+      // oder die transform-Eigenschaften auf "none" setzen.
+      // Hier ist es besser, die animated-line Elemente einfach sichtbar zu lassen.
+
+      // Optional: Wiederherstellen des Original-HTML nach der Animation
+      // tl.add(() => {
+      //   if (heroHeadlineRef.current) {
+      //     heroHeadlineRef.current.innerHTML = originalHTML;
+      //   }
+      // });
+    }
 
     // Scroll-Animation für die Bento-Karten
     gsap.utils.toArray<HTMLElement>(".bento-card").forEach((card) => {
@@ -63,38 +124,34 @@ export default function Portfolio() {
       />
 
       {/* Navigation */}
-<nav className="fixed top-0 w-full z-50 p-6">
-  <div className="max-w-6xl mx-auto flex justify-between items-center bg-[#1A1D23]/60 backdrop-blur-xl border border-white/5 px-6 py-4 rounded-2xl">
-    
-    {/* Logo Links */}
-    <a href="#" className="text-xl font-extrabold tracking-tighter uppercase flex items-center">
-      LEON<span className="text-[#8B5CF6]">.</span>
-    </a>
-
-    {/* Items Rechts - Mittig zum Logo ausgerichtet */}
-    <div className="hidden md:flex items-center space-x-8 text-sm font-medium">
-      <a href="#work" className="hover:text-[#8B5CF6] transition-colors py-2">Work</a>
-      <a href="#about" className="hover:text-[#8B5CF6] transition-colors py-2">About</a>
-      <a href="#contact" className="ml-4 px-5 py-2.5 bg-[#8B5CF6] text-white rounded-xl hover:bg-[#7c4dff] transition-all flex items-center justify-center">
-        Let's Talk
-      </a>
-    </div>
-  </div>
-</nav>
+      <nav className="fixed top-0 w-full z-50 p-6">
+        <div className="max-w-6xl mx-auto flex justify-between items-center bg-[#1A1D23]/60 backdrop-blur-xl border border-white/5 px-6 py-4 rounded-2xl">
+          <a href="#" className="text-xl font-extrabold tracking-tighter uppercase flex items-center">
+            LEON<span className="text-[#8B5CF6]">.</span>
+          </a>
+          <div className="hidden md:flex items-center space-x-8 text-sm font-medium">
+            <a href="#work" className="hover:text-[#8B5CF6] transition-colors py-2">Work</a>
+            <a href="#about" className="hover:text-[#8B5CF6] transition-colors py-2">About</a>
+            <a href="#contact" className="ml-4 px-5 py-2.5 bg-[#8B5CF6] text-white rounded-xl hover:bg-[#7c4dff] transition-all flex items-center justify-center">
+              Let's Talk
+            </a>
+          </div>
+        </div>
+      </nav>
 
       {/* Hero Section */}
       <section className="relative min-h-screen flex items-center justify-center px-6 pt-20">
         <div className="max-w-4xl text-center hero-content">
-          <h1 className="text-5xl md:text-8xl font-black mb-6 leading-[1.1] tracking-tight">
+          <h1 ref={heroHeadlineRef} className="text-5xl md:text-8xl font-black mb-6 leading-[1.1] tracking-tight">
             Digitale Erlebnisse <br /> 
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#8B5CF6] to-[#22D3EE]">
               neu gedacht.
             </span>
           </h1>
-          <p className="text-gray-400 text-lg md:text-xl max-w-2xl mx-auto mb-10">
+          <p className="hero-subtitle text-gray-400 text-lg md:text-xl max-w-2xl mx-auto mb-10">
             Ich bin Leon Jakob — Webentwickler & Designer. Ich kombiniere sauberen Code mit herausragendem Design für moderne Unternehmen.
           </p>
-          <div className="flex flex-col md:flex-row gap-4 justify-center items-center">
+          <div className="hero-buttons flex flex-col md:flex-row gap-4 justify-center items-center">
             <a href="#work" className="px-8 py-4 bg-white text-black font-bold rounded-2xl hover:scale-105 transition-transform">
               Projekte ansehen
             </a>
